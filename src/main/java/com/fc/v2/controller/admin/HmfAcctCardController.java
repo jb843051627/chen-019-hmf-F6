@@ -2,7 +2,6 @@ package com.fc.v2.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fc.v2.common.base.BaseController;
-import com.fc.v2.common.domain.AjaxResult;
 import com.fc.v2.common.domain.ResultTable;
 import com.fc.v2.common.log.Log;
 import com.fc.v2.model.auto.THmfAcctCard;
@@ -16,7 +15,11 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 分户账立户单 Controller
+ * 分户账立户单 Controller（只读台账）
+ *
+ * 今年从立户这一步管起来后，写操作一律走 {@link HmfHouseholdController} 的服务口子：
+ * 立户 /hmfHousehold/open、迈步 /push、改面 /amendArea、换册 /amendBook。
+ * 本处不再挂新增、修改、删除入口——通用增删改已在服务层封死，接口层没有第二条路可绕。
  *
  * @author fuce
  * @date 2026-09-12
@@ -38,43 +41,19 @@ public class HmfAcctCardController extends BaseController {
         return prefix + "/list";
     }
 
-    @Log(title = "分户账立户单集合查询", action = "list")
-    @ApiOperation(value = "分页查询", notes = "分页查询")
+    @Log(title = "分户账立户单现行台账", action = "list")
+    @ApiOperation(value = "分页查询（只摆现行层真有的户，不补空行；旧版走版本历史翻）", notes = "分页查询")
     @GetMapping("/list")
     @RequiresPermissions("hmf:hmfAcctCard:list")
     @ResponseBody
     public ResultTable list(THmfAcctCard record) {
-        QueryWrapper<THmfAcctCard> queryWrapper = new QueryWrapper<THmfAcctCard>();
+        QueryWrapper<THmfAcctCard> queryWrapper = new QueryWrapper<THmfAcctCard>()
+                .eq("del_flag", 0)
+                .eq("layer_no", 0)
+                .orderByDesc("create_time");
         startPage();
         com.github.pagehelper.PageInfo<THmfAcctCard> page =
                 new com.github.pagehelper.PageInfo<THmfAcctCard>(hmfAcctCardService.selectTHmfAcctCardList(queryWrapper));
         return pageTable(page.getList(), page.getTotal());
-    }
-
-    @Log(title = "分户账立户单新增", action = "add")
-    @ApiOperation(value = "新增", notes = "新增")
-    @PostMapping("/add")
-    @RequiresPermissions("hmf:hmfAcctCard:add")
-    @ResponseBody
-    public AjaxResult add(THmfAcctCard record) {
-        return toAjax(hmfAcctCardService.insertTHmfAcctCard(record));
-    }
-
-    @Log(title = "分户账立户单修改", action = "edit")
-    @ApiOperation(value = "修改保存", notes = "修改保存")
-    @PostMapping("/edit")
-    @RequiresPermissions("hmf:hmfAcctCard:edit")
-    @ResponseBody
-    public AjaxResult editSave(THmfAcctCard record) {
-        return toAjax(hmfAcctCardService.updateTHmfAcctCard(record));
-    }
-
-    @Log(title = "分户账立户单删除", action = "remove")
-    @ApiOperation(value = "删除", notes = "删除")
-    @DeleteMapping("/remove")
-    @RequiresPermissions("hmf:hmfAcctCard:remove")
-    @ResponseBody
-    public AjaxResult remove(String ids) {
-        return toAjax(hmfAcctCardService.deleteTHmfAcctCardByIds(ids));
     }
 }

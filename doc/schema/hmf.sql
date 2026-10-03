@@ -4,23 +4,60 @@
 
 CREATE TABLE IF NOT EXISTS t_hmf_acct_card (
   id bigint NOT NULL COMMENT '主键',
-  bill_no varchar(64) DEFAULT NULL COMMENT '分户账立户单号',
-  node_no int DEFAULT NULL COMMENT '本单版次序',
+  bill_no varchar(64) DEFAULT NULL COMMENT '分户账号（系统发出，人自家拟的号不入库）',
+  cert_no varchar(64) DEFAULT NULL COMMENT '证载号（系统发出；商品房为预售证载号）',
+  chain_no varchar(64) DEFAULT NULL COMMENT '链号：同一户历次版次共用一串，名录按链只露现行版',
+  door_no varchar(128) DEFAULT NULL COMMENT '门牌（查户口三码之一，同址新旧两版不许两处都在现行层）',
+  node_no int DEFAULT NULL COMMENT '本单版次序（首版1，换版+1；旧纸单空着，迁入时由系统补）',
+  layer_no int DEFAULT '0' COMMENT '所在层 0现行（名录只露此层） 1历史（旧版沉底，只供翻）',
   site_id int DEFAULT NULL COMMENT '所属分户底册',
-  site_no varchar(64) DEFAULT NULL COMMENT '所属底册代号',
-  qty decimal(12,2) DEFAULT NULL COMMENT '本户建筑面积(平方米)',
-  fine_amt decimal(12,2) DEFAULT NULL COMMENT '本户应缴额(元)',
-  content varchar(255) DEFAULT NULL COMMENT '校验串（随版次序走）',
-  grade_level int DEFAULT NULL COMMENT '面积折到的收费档次',
-  status int DEFAULT NULL COMMENT '进展 0待核对 1已核对 2已冻住',
+  site_no varchar(64) DEFAULT NULL COMMENT '所属底册代号（挂靠只认代号，名字像不算数）',
+  site_type varchar(32) DEFAULT NULL COMMENT '项目类别镜像（商品房/保障性住房/直管公房，立户时落定）',
+  qty decimal(12,2) DEFAULT NULL COMMENT '本户建筑面积(平方米，>0，填零填负数不收)',
+  fine_amt decimal(12,2) DEFAULT NULL COMMENT '本户应缴额(元，与档次同一回折算，负数不收)',
+  paper_cert_no varchar(128) DEFAULT NULL COMMENT '纸面凭据一（按类别：预售证载号/配租配售文号/产权代管单位）',
+  paper_ref_no varchar(128) DEFAULT NULL COMMENT '纸面凭据二（按类别：测绘报告编号/承办科室/拨交文据）',
+  write_start date DEFAULT NULL COMMENT '起写那一格（不得晚于止写格）',
+  write_end date DEFAULT NULL COMMENT '止写那一格',
+  content varchar(255) DEFAULT NULL COMMENT '校验码（走到已核对锁死；版次一换重算，新版新码旧版旧码）',
+  grade_level int DEFAULT NULL COMMENT '按三条界折出的收费档次 1..4（只读不写，系统同一回折出）',
+  rate_std decimal(12,2) DEFAULT NULL COMMENT '折档所用每平米标准（应缴额=建面×标准，同一回算出）',
+  status int DEFAULT NULL COMMENT '进展镜像 0待核对 1已核对 2已冻住（权威步数照步痕重放）',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
   create_by varchar(64) DEFAULT NULL COMMENT '创建者',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   update_by varchar(64) DEFAULT NULL COMMENT '更新者',
   update_time datetime DEFAULT NULL COMMENT '更新时间',
   remark varchar(500) DEFAULT NULL COMMENT '备注',
+  KEY idx_chain (chain_no, layer_no),
+  KEY idx_site_house (site_no, bill_no),
+  KEY idx_cert (cert_no),
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='分户账立户单';
+
+-- 迈步痕迹：过口一行只添不删不抹。当前停在哪一步照本表时间序重放数出，屏上填的档不算数。
+-- 退回重来另起一拨（round_no+1），上一趟的行原样留存，不与后补的笔摆在一起。
+-- 从纸簿迁进来的旧单（node_no/校验码空着）由迁移同一套方法补起步痕，不能一碰就报错。
+CREATE TABLE IF NOT EXISTS t_hmf_acct_step_log (
+  id bigint NOT NULL COMMENT '主键',
+  card_id bigint NOT NULL COMMENT '所属立户单（版次行）',
+  chain_no varchar(64) DEFAULT NULL COMMENT '链号（同户各版共用）',
+  node_no int DEFAULT NULL COMMENT '该步属于第几版（哪一版的步痕归哪一版）',
+  step_no int DEFAULT NULL COMMENT '过到哪一步 0待核对 1已核对 2已冻住（退回行记从哪一步收）',
+  round_no int DEFAULT '1' COMMENT '该版第几拨（退回重来添新拨，旧拨留存不混）',
+  action int DEFAULT '0' COMMENT '本笔动作 0过口 1退回',
+  operator varchar(64) DEFAULT NULL COMMENT '实际经办（操作）人，逐笔实记',
+  log_time datetime DEFAULT NULL COMMENT '落笔时刻（即落库时刻）',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注（退回事由等）',
+  KEY idx_card (card_id, node_no, round_no),
+  KEY idx_chain (chain_no),
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='分户账立户单迈步痕迹';
 
 CREATE TABLE IF NOT EXISTS t_hmf_arch (
   id bigint NOT NULL COMMENT '主键',

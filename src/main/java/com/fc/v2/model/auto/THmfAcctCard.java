@@ -32,15 +32,35 @@ public class THmfAcctCard implements Serializable {
     @ApiModelProperty(value = "主键")
     private Long id;
 
-    /** 分户账立户单号 */
+    /** 分户账号（系统发出，人自家拟的号不入库） */
     @TableField("bill_no")
-    @ApiModelProperty(value = "分户账立户单号")
+    @ApiModelProperty(value = "分户账号")
     private String billNo;
 
-    /** 本单版次序 */
+    /** 系统发出的证载号（商品房为预售证载号） */
+    @TableField("cert_no")
+    @ApiModelProperty(value = "证载号（系统发出）")
+    private String certNo;
+
+    /** 链号：同一户历次版次共用一串，名录按链只露现行版 */
+    @TableField("chain_no")
+    @ApiModelProperty(value = "链号（同户各版共用）")
+    private String chainNo;
+
+    /** 门牌（查户口三码之一） */
+    @TableField("door_no")
+    @ApiModelProperty(value = "门牌")
+    private String doorNo;
+
+    /** 本单版次序（首版1，换版+1） */
     @TableField("node_no")
     @ApiModelProperty(value = "本单版次序")
     private Integer nodeNo;
+
+    /** 所在层 0现行 1历史（旧版沉底只供翻） */
+    @TableField("layer_no")
+    @ApiModelProperty(value = "所在层 0现行 1历史")
+    private Integer layerNo;
 
     /** 所属分户底册 */
     @TableField("site_id")
@@ -52,25 +72,57 @@ public class THmfAcctCard implements Serializable {
     @ApiModelProperty(value = "所属底册代号")
     private String siteNo;
 
-    /** 本户建筑面积(平方米) */
+    /** 项目类别镜像（商品房/保障性住房/直管公房，立户时落定） */
+    @TableField("site_type")
+    @ApiModelProperty(value = "项目类别镜像")
+    private String siteType;
+
+    /** 本户建筑面积(平方米，>0) */
     @TableField("qty")
     @ApiModelProperty(value = "本户建筑面积(平方米)")
     private BigDecimal qty;
 
-    /** 本户应缴额(元) */
+    /** 本户应缴额(元，与档次同一回折算) */
     @TableField("fine_amt")
     @ApiModelProperty(value = "本户应缴额(元)")
     private BigDecimal fineAmt;
 
-    /** 校验串（随版次序走） */
+    /** 纸面凭据一（按类别：预售证载号/配租配售文号/产权代管单位） */
+    @TableField("paper_cert_no")
+    @ApiModelProperty(value = "纸面凭据一")
+    private String paperCertNo;
+
+    /** 纸面凭据二（按类别：测绘报告编号/承办科室/拨交文据） */
+    @TableField("paper_ref_no")
+    @ApiModelProperty(value = "纸面凭据二")
+    private String paperRefNo;
+
+    /** 起写那一格（不得晚于止写格） */
+    @TableField("write_start")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @ApiModelProperty(value = "起写格")
+    private Date writeStart;
+
+    /** 止写那一格 */
+    @TableField("write_end")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @ApiModelProperty(value = "止写格")
+    private Date writeEnd;
+
+    /** 校验码（走到已核对锁死；换版重算，新版新码旧版旧码） */
     @TableField("content")
-    @ApiModelProperty(value = "校验串（随版次序走）")
+    @ApiModelProperty(value = "校验码（随版次序走）")
     private String content;
 
-    /** 面积折到的收费档次 */
+    /** 按三条界折出的收费档次 1..4（只读不写，系统折出） */
     @TableField("grade_level")
     @ApiModelProperty(value = "面积折到的收费档次")
     private Integer gradeLevel;
+
+    /** 折档所用每平米标准（应缴额=建面×标准，同一回算出） */
+    @TableField("rate_std")
+    @ApiModelProperty(value = "每平米收费标准")
+    private BigDecimal rateStd;
 
     /** 进展 0待核对 1已核对 2已冻住 */
     @TableField("status")
@@ -125,6 +177,38 @@ public class THmfAcctCard implements Serializable {
         this.billNo = billNo;
     }
 
+    public String getCertNo() {
+        return certNo;
+    }
+
+    public void setCertNo(String certNo) {
+        this.certNo = certNo;
+    }
+
+    public String getChainNo() {
+        return chainNo;
+    }
+
+    public void setChainNo(String chainNo) {
+        this.chainNo = chainNo;
+    }
+
+    public String getDoorNo() {
+        return doorNo;
+    }
+
+    public void setDoorNo(String doorNo) {
+        this.doorNo = doorNo;
+    }
+
+    public Integer getLayerNo() {
+        return layerNo;
+    }
+
+    public void setLayerNo(Integer layerNo) {
+        this.layerNo = layerNo;
+    }
+
     public Integer getNodeNo() {
         return nodeNo;
     }
@@ -147,6 +231,54 @@ public class THmfAcctCard implements Serializable {
 
     public void setSiteNo(String siteNo) {
         this.siteNo = siteNo;
+    }
+
+    public String getSiteType() {
+        return siteType;
+    }
+
+    public void setSiteType(String siteType) {
+        this.siteType = siteType;
+    }
+
+    public String getPaperCertNo() {
+        return paperCertNo;
+    }
+
+    public void setPaperCertNo(String paperCertNo) {
+        this.paperCertNo = paperCertNo;
+    }
+
+    public String getPaperRefNo() {
+        return paperRefNo;
+    }
+
+    public void setPaperRefNo(String paperRefNo) {
+        this.paperRefNo = paperRefNo;
+    }
+
+    public Date getWriteStart() {
+        return writeStart;
+    }
+
+    public void setWriteStart(Date writeStart) {
+        this.writeStart = writeStart;
+    }
+
+    public Date getWriteEnd() {
+        return writeEnd;
+    }
+
+    public void setWriteEnd(Date writeEnd) {
+        this.writeEnd = writeEnd;
+    }
+
+    public BigDecimal getRateStd() {
+        return rateStd;
+    }
+
+    public void setRateStd(BigDecimal rateStd) {
+        this.rateStd = rateStd;
     }
 
     public BigDecimal getQty() {
