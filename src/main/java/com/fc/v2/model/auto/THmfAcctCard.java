@@ -52,25 +52,97 @@ public class THmfAcctCard implements Serializable {
     @ApiModelProperty(value = "所属底册代号")
     private String siteNo;
 
+    /** 门牌 */
+    @TableField("door_no")
+    @ApiModelProperty(value = "门牌")
+    private String doorNo;
+
+    /** 随附证载号（系统发出） */
+    @TableField("cert_no")
+    @ApiModelProperty(value = "随附证载号（系统发出）")
+    private String certNo;
+
+    /** 项目类别镜像（商品房/保障性住房/直管公房，照底册落） */
+    @TableField("site_type")
+    @ApiModelProperty(value = "项目类别镜像")
+    private String siteType;
+
+    /** 商品房：预售证载号 */
+    @TableField("permit_no")
+    @ApiModelProperty(value = "商品房：预售证载号")
+    private String permitNo;
+
+    /** 商品房：测绘报告编号 */
+    @TableField("survey_no")
+    @ApiModelProperty(value = "商品房：测绘报告编号")
+    private String surveyNo;
+
+    /** 保障性住房：配租配售文号 */
+    @TableField("allot_no")
+    @ApiModelProperty(value = "保障性住房：配租配售文号")
+    private String allotNo;
+
+    /** 保障性住房：承办科室 */
+    @TableField("host_dept")
+    @ApiModelProperty(value = "保障性住房：承办科室")
+    private String hostDept;
+
+    /** 直管公房：产权代管单位 */
+    @TableField("owner_unit")
+    @ApiModelProperty(value = "直管公房：产权代管单位")
+    private String ownerUnit;
+
+    /** 直管公房：拨交文据 */
+    @TableField("grant_doc")
+    @ApiModelProperty(value = "直管公房：拨交文据")
+    private String grantDoc;
+
+    /** 起写时刻（不得晚于止写） */
+    @TableField("write_start")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ApiModelProperty(value = "起写时刻")
+    private Date writeStart;
+
+    /** 止写时刻（早于起写须先确认才收） */
+    @TableField("write_end")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ApiModelProperty(value = "止写时刻")
+    private Date writeEnd;
+
     /** 本户建筑面积(平方米) */
     @TableField("qty")
     @ApiModelProperty(value = "本户建筑面积(平方米)")
     private BigDecimal qty;
 
-    /** 本户应缴额(元) */
+    /** 本户应缴额(元，与档次同一回算出) */
     @TableField("fine_amt")
     @ApiModelProperty(value = "本户应缴额(元)")
     private BigDecimal fineAmt;
 
-    /** 校验串（随版次序走） */
+    /** 本档每平米标准（随档次取） */
+    @TableField("unit_price")
+    @ApiModelProperty(value = "本档每平米标准")
+    private BigDecimal unitPrice;
+
+    /** 校验码（走到已核对锁死；换版重算） */
     @TableField("content")
-    @ApiModelProperty(value = "校验串（随版次序走）")
+    @ApiModelProperty(value = "校验码（走到已核对锁死；换版重算）")
     private String content;
 
     /** 面积折到的收费档次 */
     @TableField("grade_level")
     @ApiModelProperty(value = "面积折到的收费档次")
     private Integer gradeLevel;
+
+    /** 所在层 0现行 1历史层 */
+    @TableField("layer")
+    @ApiModelProperty(value = "所在层 0现行 1历史层")
+    private Integer layer;
+
+    /** 就地打住 0在走 1已打住 */
+    @TableField("halt_flag")
+    @ApiModelProperty(value = "就地打住 0在走 1已打住")
+    private Integer haltFlag;
 
     /** 进展 0待核对 1已核对 2已冻住 */
     @TableField("status")
@@ -149,6 +221,94 @@ public class THmfAcctCard implements Serializable {
         this.siteNo = siteNo;
     }
 
+    public String getDoorNo() {
+        return doorNo;
+    }
+
+    public void setDoorNo(String doorNo) {
+        this.doorNo = doorNo;
+    }
+
+    public String getCertNo() {
+        return certNo;
+    }
+
+    public void setCertNo(String certNo) {
+        this.certNo = certNo;
+    }
+
+    public String getSiteType() {
+        return siteType;
+    }
+
+    public void setSiteType(String siteType) {
+        this.siteType = siteType;
+    }
+
+    public String getPermitNo() {
+        return permitNo;
+    }
+
+    public void setPermitNo(String permitNo) {
+        this.permitNo = permitNo;
+    }
+
+    public String getSurveyNo() {
+        return surveyNo;
+    }
+
+    public void setSurveyNo(String surveyNo) {
+        this.surveyNo = surveyNo;
+    }
+
+    public String getAllotNo() {
+        return allotNo;
+    }
+
+    public void setAllotNo(String allotNo) {
+        this.allotNo = allotNo;
+    }
+
+    public String getHostDept() {
+        return hostDept;
+    }
+
+    public void setHostDept(String hostDept) {
+        this.hostDept = hostDept;
+    }
+
+    public String getOwnerUnit() {
+        return ownerUnit;
+    }
+
+    public void setOwnerUnit(String ownerUnit) {
+        this.ownerUnit = ownerUnit;
+    }
+
+    public String getGrantDoc() {
+        return grantDoc;
+    }
+
+    public void setGrantDoc(String grantDoc) {
+        this.grantDoc = grantDoc;
+    }
+
+    public Date getWriteStart() {
+        return writeStart;
+    }
+
+    public void setWriteStart(Date writeStart) {
+        this.writeStart = writeStart;
+    }
+
+    public Date getWriteEnd() {
+        return writeEnd;
+    }
+
+    public void setWriteEnd(Date writeEnd) {
+        this.writeEnd = writeEnd;
+    }
+
     public BigDecimal getQty() {
         return qty;
     }
@@ -179,6 +339,30 @@ public class THmfAcctCard implements Serializable {
 
     public void setGradeLevel(Integer gradeLevel) {
         this.gradeLevel = gradeLevel;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Integer getLayer() {
+        return layer;
+    }
+
+    public void setLayer(Integer layer) {
+        this.layer = layer;
+    }
+
+    public Integer getHaltFlag() {
+        return haltFlag;
+    }
+
+    public void setHaltFlag(Integer haltFlag) {
+        this.haltFlag = haltFlag;
     }
 
     public Integer getStatus() {
